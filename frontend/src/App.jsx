@@ -1,32 +1,52 @@
 import "./App.css";
-import axios from "axios";
-import { useEffect, useState } from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Cookies from "js-cookie";
+import { Auth } from "./Pages/Auth/Auth";
+import { Toaster } from "sonner";
 
 function App() {
-  const [data, setData] = useState(null);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(import.meta.env.VITE_API_URL);
-        setData(response.data);
-        console.log("UseEffect"); 
-      } catch (error) {
-        console.error("Error fetching data from backend:", error);
-      }
-    };
-    fetchData();
-  }, []);
-
   return (
-    <div className="App" style={{display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100vh"}}>
-      <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-        <h1 style={{ margin: 0 }}>SHUBZ I VERSE</h1>
-      </div>
-
-      <h3>{data}</h3>
-    </div>
+    <>
+      <Toaster richColors position="top-right" />
+      <Router>
+        <Routes>
+          <Route path="/" element={<Auth />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<div>404 Not Found</div>} />
+        </Routes>
+      </Router>
+    </>
   );
 }
+
+const Dashboard = () => {
+  return (
+    <div style={{ padding: "2rem", fontSize: "1.5rem" }}>
+      Welcome to Dashboard!
+    </div>
+  );
+};
+
+const ProtectedRoute = ({ children }) => {
+  const token = Cookies.get("access_token");
+
+  if (!token) {
+    return <Navigate to="/" />;
+  }
+
+  return children;
+};
 
 export default App;
